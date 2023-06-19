@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>spades.png</file>
+        <file>hearts.png</file>
+        <file>diamonds.png</file>
+        <file>clubs.png</file>
+    </qresource>
+</RCC>

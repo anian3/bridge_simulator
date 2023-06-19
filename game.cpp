@@ -11,3 +11,24 @@ Game::Game() {
 Game::~Game(){
     delete table;
 }
+
+void Game::color_chosen(bool isTrumpGame, Color trump)
+{
+    this->isTrumpGame = isTrumpGame;
+    this->trump = trump;
+}
+
+void Game::contractLevel_chosen(int contractLevel)
+{
+    this->contractLevel = contractLevel;
+}
+
+bool Game::isTrump() const
+{
+    return isTrumpGame;
+}
+
+Color Game::getTrump() const
+{
+    return trump;
+}

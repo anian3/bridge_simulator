@@ -23,6 +23,7 @@ set(PROJECT_SOURCES
         hand.h
         table.cpp
         table.h
+        resources.qrc
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

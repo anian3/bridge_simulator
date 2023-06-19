@@ -16,6 +16,8 @@ struct Card {
     int value; // 2-14
     Color color;
 
+    int getValue() const {return value;}
+    Color getColor() const {return color;}
     static bool compare(const Card& card1, const Card& card2);
 };
 

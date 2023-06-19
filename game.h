@@ -16,6 +16,9 @@ public:
     void color_chosen(bool isTrumpGame, Color trump);
     void contractLevel_chosen(int contractLevel);
 
+    bool isTrump() const;
+    Color getTrump() const;
+
 
 
 private:
