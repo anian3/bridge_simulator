@@ -32,3 +32,20 @@ Color Game::getTrump() const
 {
     return trump;
 }
+
+Card Game::getCard(Player_hands whichPlayer, int index) const
+{
+    return table->getPlayerHand(whichPlayer).getCard(index);
+}
+
+Card Game::opponentPlayFirst(Player_hands opponent)
+{
+    Card card = table->getPlayerHand(opponent).throwCardFirst();
+    table->addCardToTable(card);
+    return card;
+}
+
+int Game::numCardsLeft(Player_hands player)
+{
+    return table->getPlayerHand(player).getSize();
+}

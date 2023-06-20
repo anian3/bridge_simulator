@@ -19,6 +19,12 @@ public:
     bool isTrump() const;
     Color getTrump() const;
 
+    Card getCard(Player_hands whichPlayer, int index) const;
+
+    Card opponentPlayFirst(Player_hands opponent);
+
+    int numCardsLeft(Player_hands player);
+
 
 
 private:

@@ -9,9 +9,20 @@
 #include <array>
 #include "hand.h"
 
+enum Player_hands {
+    Player_hand,
+    LHO_hand,
+    Dummy_hand,
+    RHO_hand
+};
+
 class Table {
 public:
     Table(Hand player, Hand LHO, Hand dummy, Hand RHO);
+
+    Hand getPlayerHand(Player_hands whichHand) const;
+
+    std::vector<Card> getCardsOnTable() const;
 
     Card NPC_play(Color trump, bool isTrumpGame);
 
@@ -20,6 +31,8 @@ public:
     void endOfRound(bool isTrumpGame, Color trump); // patrzy, kto wziął lewę, ustawia currentlyPlaying
 
     int whoTakes(bool isTrumpGame, Color trump);
+
+    void addCardToTable(Card card);
 
 
  private:

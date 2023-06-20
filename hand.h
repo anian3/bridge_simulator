@@ -28,6 +28,10 @@ public:
 
     void getCards(std::vector<Card> givenCards);
 
+    Card getCard(int index) const;
+
+    int getSize() const;
+
     Card throwCardFirst(); // wistuje
 
     Card throwCardSecond(Card firstCard, Color trump, bool isTrumpGame); // rzuca jako drugi

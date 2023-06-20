@@ -72,6 +72,30 @@ int Table::whoTakes(bool isTrumpGame, Color trump){
     return highestIndex;
 }
 
+Hand Table::getPlayerHand(Player_hands whichHand) const
+{
+    switch(whichHand){
+    case Player_hand:
+        return player;
+    case LHO_hand:
+        return LHO;
+    case Dummy_hand:
+        return dummy;
+    case RHO_hand:
+        return RHO;
+    }
+}
+
+std::vector<Card> Table::getCardsOnTable() const
+{
+    return cardsOnTable;
+}
+
+void Table::addCardToTable(Card card)
+{
+    cardsOnTable.push_back(card);
+}
+
 Card Table::NPC_play(Color trump, bool isTrumpGame)
 {
     Hand playingHand;

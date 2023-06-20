@@ -10,7 +10,7 @@ bool Card::compare(const Card& card1, const Card& card2){
     if (card1.color != card2.color) {
         return static_cast<int>(card1.color) < static_cast<int>(card2.color);
     }
-    return card1.value < card2.value;
+    return card1.value > card2.value;
 }
 
 Hand::Hand(std::vector<Card> givenCards) {
@@ -43,6 +43,16 @@ void Hand::getCards(std::vector<Card> givenCards) {
                 break;
         }
     }
+}
+
+Card Hand::getCard(int index) const
+{
+    return cards[index];
+}
+
+int Hand::getSize() const
+{
+    return cards.size();
 }
 
 int Hand::numSpades() const {

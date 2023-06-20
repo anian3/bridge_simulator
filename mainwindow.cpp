@@ -1,5 +1,7 @@
 #include <vector>
 #include <iostream>
+#include <QVBoxLayout>
+#include <QTimer>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "hand.h"
@@ -11,10 +13,10 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    setWindowTitle("Symulator brydża");
     game = new Game();
     setWindowFlags(windowFlags() | Qt::MSWindowsFixedSizeDialogHint);
     setFixedSize(size());
-
     setStyleSheet("background-color: #006400;");
 
     playerCards = { ui->player_card1, ui->player_card2, ui->player_card3, ui->player_card4, ui->player_card5, ui->player_card6, ui->player_card7,
@@ -22,7 +24,17 @@ MainWindow::MainWindow(QWidget *parent)
     dummyCards = { ui->dummy_card1, ui->dummy_card2, ui->dummy_card3, ui->dummy_card4, ui->dummy_card5, ui->dummy_card6, ui->dummy_card7,
                 ui->dummy_card8, ui->dummy_card9, ui->dummy_card10, ui->dummy_card11, ui->dummy_card12, ui->dummy_card13};
 
+    lhoCards = {ui->l_lho1, ui->l_lho2, ui->l_lho3, ui->l_lho4, ui->l_lho5, ui->l_lho6, ui->l_lho7,
+                ui->l_lho8, ui->l_lho9, ui->l_lho10, ui->l_lho11, ui->l_lho12, ui->l_lho13};
+    rhoCards = {ui->l_rho1, ui->l_rho2, ui->l_rho3, ui->l_rho4, ui->l_rho5, ui->l_rho6, ui->l_rho7,
+                ui->l_rho8, ui->l_rho9, ui->l_rho10, ui->l_rho11, ui->l_rho12, ui->l_rho13};
+
     setLevelButtons(false);
+
+    hideCardsOnTable();
+    updateAllCards(Player_hand);
+    updateAllCards(Dummy_hand);
+
     connect(ui->pb_pik, &QPushButton::clicked, [this]() {this->trumpPressed(0);});
     connect(ui->pb_kier, &QPushButton::clicked, [this]() {this->trumpPressed(1);});
     connect(ui->pb_karo, &QPushButton::clicked, [this]() {this->trumpPressed(2);});
@@ -76,6 +88,14 @@ void MainWindow::setColorButtons(bool active)
     ui->pb_bezatu->setVisible(active);
 }
 
+void MainWindow::hideCardsOnTable()
+{
+    ui->l_dummy_table->setVisible(false);
+    ui->l_rho_table->setVisible(false);
+    ui->l_player_table->setVisible(false);
+    ui->l_lho_table->setVisible(false);
+}
+
 void MainWindow::trumpPressed(int which)
 {
     bool isTrumpGame = true;
@@ -115,11 +135,36 @@ void MainWindow::contractLevelPressed(int level)
         }
     }
     ui->l_contract->setText(QString::number(level) + " " + trump);
+    QTimer::singleShot(500, this, [this]() {
+        opponentThrowFirst(LHO_hand);
+    });
 }
 
-void MainWindow::updateCardButton(QPushButton* button, const Card& card, int* index)
+void MainWindow::updateCardButton(QPushButton* button, const Card& card, int index)
 {
-    button->setText(QString::number(card.getValue()));
+    QString cardText;
+    int value = card.getValue();
+    if (value >= 2 && value <= 10) {
+        cardText = QString::number(value);
+    } else {
+        switch (value) {
+        case 11:
+            cardText = "J";
+            break;
+        case 12:
+            cardText = "Q";
+            break;
+        case 13:
+            cardText = "K";
+            break;
+        case 14:
+            cardText = "A";
+            break;
+        default:
+            cardText = "";
+            break;
+        }
+    }
 
     QString iconPath;
     switch (card.getColor())
@@ -140,8 +185,161 @@ void MainWindow::updateCardButton(QPushButton* button, const Card& card, int* in
         iconPath = "";
         break;
     }
-    QIcon icon(iconPath);
-    button->setIcon(icon);
-    button->setIconSize(QSize(40, 40));
+
+    QVBoxLayout* layout = new QVBoxLayout(button);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+    layout->setAlignment(Qt::AlignCenter);
+
+    QFont font;
+    font.setPointSize(12); // Set the font size
+    font.setBold(true);
+    QLabel* textLabel = new QLabel(cardText);
+    textLabel->setStyleSheet("border: none; padding: 1;");
+    textLabel->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    textLabel->setFont(font);
+
+    QPixmap iconPixmap(iconPath);
+    QLabel* iconLabel = new QLabel();
+    iconLabel->setStyleSheet("border: none; padding: 0;");
+    iconLabel->setPixmap(iconPixmap);
+    iconLabel->setScaledContents(true);
+    iconLabel->setMaximumSize(35, 35);
+    iconLabel->setAlignment(Qt::AlignCenter);
+
+    layout->addWidget(textLabel);
+    layout->addWidget(iconLabel);
+    layout->addStretch();
+
+    button->setProperty("index", QVariant::fromValue(index));
 }
+
+void MainWindow::updateAllCards(Player_hands whichPlayer)
+{
+    QPushButton* button;
+    Card card;
+    if (whichPlayer == 0){
+        for (int i = 0; i < playerCards.size(); i++)
+        {
+            button = playerCards[i];
+            card = game->getCard(whichPlayer, i);
+            updateCardButton(button, card, i);
+        }
+    }
+    else if (whichPlayer == 2){
+        for (int i = 0; i < dummyCards.size(); i++)
+        {
+            button = dummyCards[i];
+            card = game->getCard(whichPlayer, i);
+            updateCardButton(button, card, i);
+        }
+    }
+
+}
+
+void MainWindow::updateCardOnTable(Card card, Player_hands whichPlayer)
+{
+    QLabel *label;
+    switch (whichPlayer) {
+    case Player_hand:
+        label = ui->l_player_table;
+        break;
+    case LHO_hand:
+        label = ui->l_lho_table;
+        break;
+    case Dummy_hand:
+        label = ui->l_dummy_table;
+        break;
+    case RHO_hand:
+        label = ui->l_rho_table;
+        break;
+    }
+    QString cardText;
+    int value = card.getValue();
+    if (value >= 2 && value <= 10) {
+        cardText = QString::number(value);
+    } else {
+        switch (value) {
+        case 11:
+            cardText = "J";
+            break;
+        case 12:
+            cardText = "Q";
+            break;
+        case 13:
+            cardText = "K";
+            break;
+        case 14:
+            cardText = "A";
+            break;
+        default:
+            cardText = "";
+            break;
+        }
+    }
+
+    QString iconPath;
+    switch (card.getColor())
+    {
+    case SPADES:
+        iconPath = ":/icons/spades.png";
+        break;
+    case HEARTS:
+        iconPath = ":/icons/hearts.png";
+        break;
+    case CLUBS:
+        iconPath = ":/icons/clubs.png";
+        break;
+    case DIAMONDS:
+        iconPath = ":/icons/diamonds.png";
+        break;
+    default:
+        iconPath = "";
+        break;
+    }
+    QVBoxLayout* layout = new QVBoxLayout(label);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+    layout->setAlignment(Qt::AlignCenter);
+
+    QFont font;
+    font.setPointSize(12); // Set the font size
+    font.setBold(true);
+    QLabel* textLabel = new QLabel(cardText);
+    textLabel->setStyleSheet("border: none; padding: 1;");
+    textLabel->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    textLabel->setFont(font);
+
+    QPixmap iconPixmap(iconPath);
+    QLabel* iconLabel = new QLabel();
+    iconLabel->setStyleSheet("border: none; padding: 0;");
+    iconLabel->setPixmap(iconPixmap);
+    iconLabel->setScaledContents(true);
+    iconLabel->setMaximumSize(35, 35);
+    iconLabel->setAlignment(Qt::AlignCenter);
+
+    layout->addWidget(textLabel);
+    layout->addWidget(iconLabel);
+    layout->addStretch();
+    label->setVisible(true);
+}
+
+void MainWindow::opponentThrowFirst(Player_hands whichPlayer)
+{
+    Card card = game->opponentPlayFirst(whichPlayer);
+    updateCardOnTable(card, whichPlayer);
+    if (whichPlayer == LHO_hand){
+        QLabel* lastLabel = lhoCards.back();
+        lastLabel->hide();
+        lhoCards.pop_back();
+    }
+    else {
+        QLabel* lastLabel = rhoCards.back();
+        lastLabel->hide();
+        rhoCards.pop_back();
+    }
+}
+
+
+
 
