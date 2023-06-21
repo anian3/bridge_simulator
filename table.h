@@ -22,6 +22,10 @@ public:
 
     Hand getPlayerHand(Player_hands whichHand) const;
 
+    int getCurrentlyPlaying() const;
+
+    void setCurrentlyPlaying(int who);
+
     std::vector<Card> getCardsOnTable() const;
 
     Card NPC_play(Color trump, bool isTrumpGame);
@@ -33,6 +37,7 @@ public:
     int whoTakes(bool isTrumpGame, Color trump);
 
     void addCardToTable(Card card);
+
 
 
  private:

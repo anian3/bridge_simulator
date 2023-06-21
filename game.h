@@ -5,6 +5,7 @@
 #ifndef BRIDGE_SIMULATOR_GAME_H
 #define BRIDGE_SIMULATOR_GAME_H
 
+#include <vector>
 #include "hand.h"
 #include "table.h"
 
@@ -21,11 +22,21 @@ public:
 
     Card getCard(Player_hands whichPlayer, int index) const;
 
-    Card opponentPlayFirst(Player_hands opponent);
+    std::vector<int> getCardIndexesOfColor(Player_hands whichPlayer, Color color);
+
+    Card opponentPlay();
+
+    Card playerPlay(int whichCard);
 
     int numCardsLeft(Player_hands player);
 
+    Color getRoundColor() const;
 
+    int howManyOnTable() const;
+
+    Hand getPlayerHand(Player_hands whichHand) const;
+
+    Player_hands endOfRound();
 
 private:
     //

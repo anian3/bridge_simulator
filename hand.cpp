@@ -55,6 +55,35 @@ int Hand::getSize() const
     return cards.size();
 }
 
+std::vector<int> Hand::getIndexesOfColor(Color color)
+{
+    std::vector<int> indexes;
+    int startIndex = 0;
+    switch(color) {
+    case SPADES:
+        for (int i = 0; i < numSpades(); ++i)
+            indexes.push_back(i);
+        break;
+    case HEARTS:
+        startIndex += numSpades();
+        for (int i = 0; i < numHearts(); ++i)
+            indexes.push_back(startIndex + i);
+        break;
+    case CLUBS:
+        startIndex += numSpades() + numHearts();
+        for (int i = 0; i < numClubs(); ++i)
+            indexes.push_back(startIndex + i);
+        break;
+    case DIAMONDS:
+        startIndex += numSpades() + numHearts() + numClubs();
+        for (int i = 0; i < numDiamonds(); ++i)
+            indexes.push_back(startIndex + i);
+        break;
+    }
+
+    return indexes;
+}
+
 int Hand::numSpades() const {
     return numSpades_;
 }

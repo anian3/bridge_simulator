@@ -86,6 +86,16 @@ Hand Table::getPlayerHand(Player_hands whichHand) const
     }
 }
 
+int Table::getCurrentlyPlaying() const
+{
+    return currentlyPlaying;
+}
+
+void Table::setCurrentlyPlaying(int who)
+{
+    currentlyPlaying = who;
+}
+
 std::vector<Card> Table::getCardsOnTable() const
 {
     return cardsOnTable;
@@ -108,7 +118,7 @@ Card Table::NPC_play(Color trump, bool isTrumpGame)
             playingHand = RHO;
         }
         else {
-            throw std::runtime_error("Invalid player position!"); // Throw an exception
+            throw std::runtime_error("Invalid player position!");
         }
     }
     catch (const std::exception& e) {
@@ -127,6 +137,9 @@ Card Table::NPC_play(Color trump, bool isTrumpGame)
         bool isHighestTrump = cardsOnTable[whoTook].color == trump;
         returnCard = playingHand.throwCardLast(cardsOnTable[0].color, trump, isHigherNeeded, cardsOnTable[whoTook].value, isHighestTrump, isTrumpGame);
     }
+    addCardToTable(returnCard);
+    numPlayedThisRound++;
+    currentlyPlaying = (currentlyPlaying + 1) % 4;
     return returnCard;
 
 }
@@ -146,16 +159,21 @@ Card Table::player_play(int whichCard)
         }
     }
     catch (const std::exception& e) {
-        std::cerr << "Exception caught: " << e.what() << std::endl;
+        std::cerr << "Exception caught: " << e.what() << " " << currentlyPlaying << std::endl;
         return Card();
     }
-    return playingHand.throwCard(whichCard);
+    numPlayedThisRound++;
+    currentlyPlaying = (currentlyPlaying + 1) % 4;
+    Card returnCard = playingHand.throwCard(whichCard);
+    addCardToTable(returnCard);
+    return returnCard;
 }
 
 void Table::endOfRound(bool isTrumpGame, Color trump)
 {
     int whoTook = whoTakes(isTrumpGame, trump);
-    int currentlyPlaying = (currentlyPlaying + whoTook + 1) % 4;
+    currentlyPlaying = ((currentlyPlaying + 1) % 4 + whoTook) % 4;
+    numPlayedThisRound = 0;
     cardsOnTable.clear();
 }
 

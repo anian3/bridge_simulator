@@ -32,6 +32,8 @@ public:
 
     int getSize() const;
 
+    std::vector<int> getIndexesOfColor(Color color);
+
     Card throwCardFirst(); // wistuje
 
     Card throwCardSecond(Card firstCard, Color trump, bool isTrumpGame); // rzuca jako drugi

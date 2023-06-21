@@ -34,11 +34,18 @@ private:
     //methods:
     void setLevelButtons(bool active);
     void setColorButtons(bool active);
+    void connectCardButtons();
     void hideCardsOnTable();
     void updateCardButton(QPushButton* button, const Card& card, int index);
     void updateAllCards(Player_hands whichPlayer);
+    void updateCardProperties(bool isPlayer, int indexRemoved);
     void updateCardOnTable(Card card, Player_hands whichPlayer);
-    void opponentThrowFirst(Player_hands whichPlayer);
+    void opponentPlay(Player_hands whichPlayer);
+    void playerThrowCard(bool isPlayer);
+    void enableAllCardButtons(Player_hands whichPlayer);
+    void enableCardButtons(Player_hands whichPlayer, Color color);
+    void disableCardButtons(bool isPlayer);
+    void setNextAction(Player_hands lastPlayed);
 
 };
 #endif // MAINWINDOW_H

@@ -48,6 +48,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->pb_level5, &QPushButton::clicked, [this]() {this->contractLevelPressed(5);});
     connect(ui->pb_level6, &QPushButton::clicked, [this]() {this->contractLevelPressed(6);});
     connect(ui->pb_level7, &QPushButton::clicked, [this]() {this->contractLevelPressed(7);});
+
+    connectCardButtons();
+    disableCardButtons(true);
+    disableCardButtons(false);
 }
 
 MainWindow::~MainWindow()
@@ -88,12 +92,29 @@ void MainWindow::setColorButtons(bool active)
     ui->pb_bezatu->setVisible(active);
 }
 
+void MainWindow::connectCardButtons()
+{
+    for (QPushButton* button: playerCards){
+        connect(button, &QPushButton::clicked, this, [this]() {this->playerThrowCard(true);}, Qt::DirectConnection);
+    }
+    for (QPushButton* button: dummyCards){
+        connect(button, &QPushButton::clicked, this, [this]() {this->playerThrowCard(false);}, Qt::DirectConnection);
+    }
+}
+
 void MainWindow::hideCardsOnTable()
 {
     ui->l_dummy_table->setVisible(false);
+    ui->l_dummy_table->clear();
+
     ui->l_rho_table->setVisible(false);
+    ui->l_rho_table->clear();
+
     ui->l_player_table->setVisible(false);
+    ui->l_player_table->clear();
+
     ui->l_lho_table->setVisible(false);
+    ui->l_lho_table->clear();
 }
 
 void MainWindow::trumpPressed(int which)
@@ -136,7 +157,7 @@ void MainWindow::contractLevelPressed(int level)
     }
     ui->l_contract->setText(QString::number(level) + " " + trump);
     QTimer::singleShot(500, this, [this]() {
-        opponentThrowFirst(LHO_hand);
+        opponentPlay(LHO_hand);
     });
 }
 
@@ -237,6 +258,20 @@ void MainWindow::updateAllCards(Player_hands whichPlayer)
 
 }
 
+void MainWindow::updateCardProperties(bool isPlayer, int indexRemoved)
+{
+    std::vector<QPushButton*> buttons;
+    if (isPlayer){
+        buttons = playerCards;
+    }
+    else {
+        buttons = dummyCards;
+    }
+    for (int i=indexRemoved; i < buttons.size(); i++){
+        buttons[i]->setProperty("index", QVariant::fromValue(i));
+    }
+}
+
 void MainWindow::updateCardOnTable(Card card, Player_hands whichPlayer)
 {
     QLabel *label;
@@ -324,9 +359,9 @@ void MainWindow::updateCardOnTable(Card card, Player_hands whichPlayer)
     label->setVisible(true);
 }
 
-void MainWindow::opponentThrowFirst(Player_hands whichPlayer)
+void MainWindow::opponentPlay(Player_hands whichPlayer)
 {
-    Card card = game->opponentPlayFirst(whichPlayer);
+    Card card = game->opponentPlay();
     updateCardOnTable(card, whichPlayer);
     if (whichPlayer == LHO_hand){
         QLabel* lastLabel = lhoCards.back();
@@ -338,7 +373,132 @@ void MainWindow::opponentThrowFirst(Player_hands whichPlayer)
         lastLabel->hide();
         rhoCards.pop_back();
     }
+    setNextAction(whichPlayer);
 }
+
+void MainWindow::playerThrowCard(bool isPlayer)
+{
+    disableCardButtons(isPlayer);
+    QObject* senderObject = QObject::sender();
+    if (senderObject == nullptr || !senderObject->isWidgetType()) {
+        std::cout << "Error: Invalid sender object" << std::endl;
+        return;
+    }
+    QPushButton* button = qobject_cast<QPushButton*>(senderObject);
+    if (button == nullptr) {
+        std::cout << "Error: Invalid sender button" << std::endl;
+        return;
+    }
+    QVariant propertyValue = button->property("index");
+    int index = propertyValue.toInt();
+    if (isPlayer){
+        playerCards[index]->setVisible(false);
+        playerCards.erase(playerCards.begin() + index);
+        Card card = game->playerPlay(index);
+        updateCardOnTable(card, Player_hand);
+    }
+    else {
+        dummyCards[index]->setVisible(false);
+        dummyCards.erase(dummyCards.begin() + index);
+        Card card = game->playerPlay(index);
+        updateCardOnTable(card, Dummy_hand);
+    }
+    updateCardProperties(isPlayer, index);
+    Player_hands lastPlayed = isPlayer ? Player_hand : Dummy_hand;
+    setNextAction(lastPlayed);
+}
+
+void MainWindow::enableAllCardButtons(Player_hands whichPlayer)
+{
+    if (whichPlayer == Player_hand){
+        for (QPushButton *button: playerCards){
+            button->setEnabled(true);
+        }
+    }
+    else {
+        for (QPushButton *button: dummyCards){
+            button->setEnabled(true);
+        }
+    }
+}
+
+void MainWindow::enableCardButtons(Player_hands whichPlayer, Color color)
+{
+    std::vector<int> indexes = game->getCardIndexesOfColor(whichPlayer, color);
+    if (indexes.empty()){
+        enableAllCardButtons(whichPlayer);
+        return;
+    }
+    if (whichPlayer == Player_hand){
+        for (int index: indexes){
+            playerCards[index]->setEnabled(true);
+        }
+    }
+    else {
+        for (int index: indexes){
+            dummyCards[index]->setEnabled(true);
+        }
+    }
+}
+
+void MainWindow::disableCardButtons(bool isPlayer)
+{
+    std::vector<QPushButton*> buttons;
+    if (isPlayer){
+        buttons = playerCards;
+    }
+    else{
+        buttons = dummyCards;
+    }
+    for (QPushButton *button: buttons){
+        button->setEnabled(false);
+    }
+}
+
+void MainWindow::setNextAction(Player_hands lastPlayed)
+{
+    Player_hands nowPlays;
+    if (game->howManyOnTable() == 4){
+        QTimer::singleShot(500, this, [this]() {
+            hideCardsOnTable();
+        });
+        nowPlays = game->endOfRound();
+        if (nowPlays == LHO_hand || nowPlays == RHO_hand){
+            opponentPlay(nowPlays);
+        }
+        else if (nowPlays == Player_hand){
+            enableAllCardButtons(Player_hand);
+            playerThrowCard(true);
+        }
+        else {
+            enableAllCardButtons(Dummy_hand);
+            playerThrowCard(false);
+        }
+    }
+    else {
+        switch (lastPlayed){
+
+        case Player_hand:
+            QTimer::singleShot(200, this, [this]() {
+                opponentPlay(LHO_hand);
+            });
+            break;
+        case LHO_hand:
+            enableCardButtons(Dummy_hand, game->getRoundColor());
+            break;
+        case Dummy_hand:
+            QTimer::singleShot(200, this, [this]() {
+                opponentPlay(RHO_hand);
+            });
+            break;
+        case RHO_hand:
+            enableCardButtons(Player_hand, game->getRoundColor());
+            break;
+        }
+    }
+}
+
+
 
 
 
