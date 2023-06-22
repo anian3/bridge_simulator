@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <utility>
+#include <iostream>
 #include "hand.h"
 
 bool Card::compare(const Card& card1, const Card& card2){
@@ -138,13 +139,13 @@ std::optional<Card> Hand::removeLowestOfColor(Color color) {
             break;
         case Color::CLUBS:
             if (numClubs() > 0) {
-                toThrow = cards[numSpades() + numHearts() + numSpades() - 1];
+                toThrow = cards[numSpades() + numHearts() + numClubs() - 1];
                 cards.erase(cards.begin() + numSpades() + numHearts() + numClubs() - 1);
             }
             break;
         case Color::DIAMONDS:
             if (numDiamonds() > 0) {
-                toThrow = cards[numSpades() + numHearts() + numSpades() + numDiamonds() - 1];
+                toThrow = cards[numSpades() + numHearts() + numClubs() + numDiamonds() - 1];
                 cards.erase(cards.begin() + numSpades() + numHearts() + numClubs() + numDiamonds() - 1);
             }
             break;
@@ -157,21 +158,21 @@ std::optional<Card> Hand::removeLowestOfColor(Color color) {
 
 
 Card Hand::removeLowestOfAll() {
-    int minValue = 13;
+    int minValue = 15;
     int index = -1;
-    if (numSpades() > 0 && cards[numSpades() - 1].value < minValue) {
+    if (numSpades() > 0 && cards[numSpades() - 1].getValue() < minValue) {
         index = numSpades() - 1;
-        minValue = cards[index].value;
+        minValue = cards[index].getValue();
     }
-    if (numHearts() > 0 && cards[numSpades() + numHearts() - 1].value < minValue) {
+    if (numHearts() > 0 && cards[numSpades() + numHearts() - 1].getValue() < minValue) {
         index = numSpades() + numHearts() - 1;
-        minValue = cards[index].value;
+        minValue = cards[index].getValue();
     }
-    if (numClubs() > 0 && cards[numSpades() + numHearts() + numClubs() - 1].value < minValue) {
+    if (numClubs() > 0 && cards[numSpades() + numHearts() + numClubs() - 1].getValue() < minValue) {
         index = numSpades() + numHearts() + numClubs() - 1;
-        minValue = cards[index].value;
+        minValue = cards[index].getValue();
     }
-    if (numDiamonds() > 0 && cards[numSpades() + numHearts() + numClubs() + numDiamonds() - 1].value < minValue) {
+    if (numDiamonds() > 0 && cards[numSpades() + numHearts() + numClubs() + numDiamonds() - 1].getValue() < minValue) {
         index = numSpades() + numHearts() + numClubs() + numDiamonds() - 1;
     }
     Card toThrow = cards[index];
@@ -180,16 +181,6 @@ Card Hand::removeLowestOfAll() {
     return toThrow;
 }
 
-/* int Hand::highestValueOnTable(Card* cardsOnTable, int numCards) {
-    int highestValue = 1;
-    for (int i = 0; i < numCards; ++i) {
-        if (cardsOnTable[i].value > highestValue) {
-            highestValue = cardsOnTable[i].value;
-        }
-    }
-    return highestValue;
-} przeniesc do stolu
- */
 
 std::optional<Card> Hand::lowestHigher(int startIndex, int endIndex, int highestOnTable) {
     std::optional<Card> toThrow;

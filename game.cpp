@@ -33,6 +33,21 @@ Color Game::getTrump() const
     return trump;
 }
 
+int Game::getTakenNum() const
+{
+    return takenNum;
+}
+
+int Game::getUntakenNum() const
+{
+    return untakenNum;
+}
+
+int Game::getContractLevel() const
+{
+    return contractLevel;
+}
+
 Card Game::getCard(Player_hands whichPlayer, int index) const
 {
     return table->getPlayerHand(whichPlayer).getCard(index);
@@ -67,7 +82,7 @@ Color Game::getRoundColor() const
 
 int Game::howManyOnTable() const
 {
-    return table->getCardsOnTable().size();
+    return table->getNumPlayedThisRound();
 }
 
 Hand Game::getPlayerHand(Player_hands whichHand) const
@@ -80,12 +95,16 @@ Player_hands Game::endOfRound()
     table->endOfRound(isTrumpGame, trump);
     switch(table->getCurrentlyPlaying()){
     case 0:
+        takenNum++;
         return Player_hand;
     case 1:
+        untakenNum++;
         return LHO_hand;
     case 2:
+        takenNum++;
         return Dummy_hand;
     case 3:
+        untakenNum++;
         return RHO_hand;
     default:
         return Player_hand;

@@ -106,25 +106,15 @@ void Table::addCardToTable(Card card)
     cardsOnTable.push_back(card);
 }
 
+int Table::getNumPlayedThisRound() const
+{
+    return numPlayedThisRound;
+}
+
 Card Table::NPC_play(Color trump, bool isTrumpGame)
 {
-    Hand playingHand;
+    Hand& playingHand = (currentlyPlaying == 1) ? LHO : RHO;
     Card returnCard;
-    try {
-        if (currentlyPlaying == 1) {
-            playingHand = LHO;
-        }
-        else if (currentlyPlaying == 3) {
-            playingHand = RHO;
-        }
-        else {
-            throw std::runtime_error("Invalid player position!");
-        }
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Exception caught: " << e.what() << std::endl;
-        return Card();
-    }
     if(numPlayedThisRound == 0){
         returnCard = playingHand.throwCardFirst();
     }
@@ -146,22 +136,7 @@ Card Table::NPC_play(Color trump, bool isTrumpGame)
 
 Card Table::player_play(int whichCard)
 {
-    Hand playingHand;
-    try {
-        if (currentlyPlaying == 0) {
-            playingHand = player;
-        }
-        else if (currentlyPlaying == 2) {
-            playingHand = dummy;
-        }
-        else {
-            throw std::runtime_error("Invalid player position!"); // Throw an exception
-        }
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Exception caught: " << e.what() << " " << currentlyPlaying << std::endl;
-        return Card();
-    }
+    Hand& playingHand = (currentlyPlaying == 0) ? player : dummy;
     numPlayedThisRound++;
     currentlyPlaying = (currentlyPlaying + 1) % 4;
     Card returnCard = playingHand.throwCard(whichCard);
@@ -172,7 +147,7 @@ Card Table::player_play(int whichCard)
 void Table::endOfRound(bool isTrumpGame, Color trump)
 {
     int whoTook = whoTakes(isTrumpGame, trump);
-    currentlyPlaying = ((currentlyPlaying + 1) % 4 + whoTook) % 4;
+    currentlyPlaying = (currentlyPlaying + whoTook) % 4;
     numPlayedThisRound = 0;
     cardsOnTable.clear();
 }

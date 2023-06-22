@@ -19,6 +19,8 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void keyPressEvent(QKeyEvent *event) override;
+
 public slots:
     void contractLevelPressed(int level);
     void trumpPressed(int which);
@@ -46,6 +48,7 @@ private:
     void enableCardButtons(Player_hands whichPlayer, Color color);
     void disableCardButtons(bool isPlayer);
     void setNextAction(Player_hands lastPlayed);
-
+    void updateResultLabel();
+    void updateResultLabelEnd();
 };
 #endif // MAINWINDOW_H

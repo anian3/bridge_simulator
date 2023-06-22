@@ -38,6 +38,8 @@ public:
 
     void addCardToTable(Card card);
 
+    int getNumPlayedThisRound() const;
+
 
 
  private:

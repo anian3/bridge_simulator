@@ -2,6 +2,7 @@
 #include <iostream>
 #include <QVBoxLayout>
 #include <QTimer>
+#include <QKeyEvent>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "hand.h"
@@ -60,6 +61,17 @@ MainWindow::~MainWindow()
     delete game;
 }
 
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    if (Qt::Key_Escape == event->key()){
+        close();
+        qApp->quit();
+    }
+    else {
+        QMainWindow::keyPressEvent(event);
+    }
+}
+
 void MainWindow::setLevelButtons(bool active)
 {
     ui->pb_level1->setEnabled(active);
@@ -105,16 +117,16 @@ void MainWindow::connectCardButtons()
 void MainWindow::hideCardsOnTable()
 {
     ui->l_dummy_table->setVisible(false);
-    ui->l_dummy_table->clear();
+
 
     ui->l_rho_table->setVisible(false);
-    ui->l_rho_table->clear();
+
 
     ui->l_player_table->setVisible(false);
-    ui->l_player_table->clear();
+
 
     ui->l_lho_table->setVisible(false);
-    ui->l_lho_table->clear();
+
 }
 
 void MainWindow::trumpPressed(int which)
@@ -289,6 +301,15 @@ void MainWindow::updateCardOnTable(Card card, Player_hands whichPlayer)
         label = ui->l_rho_table;
         break;
     }
+    QLayout* existingLayout = label->layout();
+    if (existingLayout) {
+        QLayoutItem* item;
+        while ((item = existingLayout->takeAt(0)) != nullptr) {
+            delete item->widget();
+            delete item;
+        }
+        delete existingLayout;
+    }
     QString cardText;
     int value = card.getValue();
     if (value >= 2 && value <= 10) {
@@ -362,6 +383,7 @@ void MainWindow::updateCardOnTable(Card card, Player_hands whichPlayer)
 void MainWindow::opponentPlay(Player_hands whichPlayer)
 {
     Card card = game->opponentPlay();
+
     updateCardOnTable(card, whichPlayer);
     if (whichPlayer == LHO_hand){
         QLabel* lastLabel = lhoCards.back();
@@ -455,25 +477,30 @@ void MainWindow::disableCardButtons(bool isPlayer)
     }
 }
 
+
+
 void MainWindow::setNextAction(Player_hands lastPlayed)
 {
-    Player_hands nowPlays;
     if (game->howManyOnTable() == 4){
         QTimer::singleShot(500, this, [this]() {
             hideCardsOnTable();
-        });
+        Player_hands nowPlays;
         nowPlays = game->endOfRound();
+        updateResultLabel();
+        if (game->numCardsLeft(Player_hand) == 0){
+            updateResultLabelEnd();
+            return;
+        }
         if (nowPlays == LHO_hand || nowPlays == RHO_hand){
             opponentPlay(nowPlays);
         }
         else if (nowPlays == Player_hand){
             enableAllCardButtons(Player_hand);
-            playerThrowCard(true);
         }
         else {
             enableAllCardButtons(Dummy_hand);
-            playerThrowCard(false);
         }
+        });
     }
     else {
         switch (lastPlayed){
@@ -495,6 +522,25 @@ void MainWindow::setNextAction(Player_hands lastPlayed)
             enableCardButtons(Player_hand, game->getRoundColor());
             break;
         }
+    }
+}
+
+void MainWindow::updateResultLabel()
+{
+    ui->l_result->setText("Wziętych: " + QString::number(game->getTakenNum()) + "            Oddanych: " + QString::number(game->getUntakenNum()));
+}
+
+void MainWindow::updateResultLabelEnd()
+{
+    int result = game->getTakenNum() - game->getContractLevel() - 6;
+    if (result < 0){
+        ui->l_result->setText("Kontrakt nieugrany!  ( " + QString::number(result) + " )");
+    }
+    else if (result == 0){
+        ui->l_result->setText("Kontrakt ugrany!   ( = )");
+    }
+    else {
+        ui->l_result->setText("Kontrakt ugrany!  ( +" + QString::number(result)+ " )");
     }
 }
 

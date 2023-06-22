@@ -20,6 +20,12 @@ public:
     bool isTrump() const;
     Color getTrump() const;
 
+    int getTakenNum() const;
+
+    int getUntakenNum() const;
+
+    int getContractLevel() const;
+
     Card getCard(Player_hands whichPlayer, int index) const;
 
     std::vector<int> getCardIndexesOfColor(Player_hands whichPlayer, Color color);
