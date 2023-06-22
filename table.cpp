@@ -59,12 +59,12 @@ Table::Table(Hand player, Hand LHO, Hand dummy, Hand RHO) {
 int Table::whoTakes(bool isTrumpGame, Color trump){
     int highestIndex = 0;
     Color color = cardsOnTable[0].color;
-    bool isHighestTrump = color == trump;
+    bool isHighestTrump = color == trump && isTrumpGame;
     for (int i=1; i<cardsOnTable.size(); i++){
         if (!isHighestTrump && cardsOnTable[i].color == color && cardsOnTable[i].value > cardsOnTable[highestIndex].value){
             highestIndex = i;
         }
-        else if (cardsOnTable[i].color == trump && (!isHighestTrump || cardsOnTable[i].value > cardsOnTable[highestIndex].value)){
+        else if (isTrumpGame && cardsOnTable[i].color == trump && (!isHighestTrump || cardsOnTable[i].value > cardsOnTable[highestIndex].value)){
             highestIndex = i;
             isHighestTrump = true;
         }
