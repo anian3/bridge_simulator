@@ -1,4 +1,8 @@
-Symulator rozgrywki brydżowej
+# Symulator rozgrywki brydżowej
+
+Stworzony w QT.
+
+## Instrukcja
 
 Po uruchomieniu programu widzimy karty swoje i dziadka. Wybieramy najpierw kolor atutowy, a następnie wysokość kontraktu, który chcemy zagrać.
 Karty wybieramy klikając na nie. Oczywiście nie ma możliwości dokładania nie do koloru lub grania poza swoją kolejnością. W prawym górnym rogu ekranu
